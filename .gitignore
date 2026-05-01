@@ -1,0 +1,5 @@
+.env
+gd_simulator.db
+__pycache__/
+*.pyc
+*.pyo
