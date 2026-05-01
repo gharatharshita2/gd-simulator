@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — GD Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="auth-container">
+
+    <!-- Glowing orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- Floating particles -->
+    <div class="particle" style="left:10%;animation-duration:12s;animation-delay:0s;"></div>
+    <div class="particle" style="left:20%;animation-duration:16s;animation-delay:-4s;"></div>
+    <div class="particle" style="left:35%;animation-duration:14s;animation-delay:-2s;"></div>
+    <div class="particle" style="left:50%;animation-duration:18s;animation-delay:-8s;"></div>
+    <div class="particle" style="left:65%;animation-duration:13s;animation-delay:-5s;"></div>
+    <div class="particle" style="left:80%;animation-duration:17s;animation-delay:-1s;"></div>
+    <div class="particle" style="left:90%;animation-duration:15s;animation-delay:-7s;"></div>
+
+    <div class="auth-card">
+      <div class="auth-logo">GD Simulator</div>
+      <h1 class="auth-title">Welcome back</h1>
+      <p class="auth-sub">Practice group discussions with AI and land your dream job.</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="POST" action="/login">
+        <div class="form-group">
+          <label>Email address</label>
+          <input type="email" name="email" placeholder="you@email.com" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn-primary">Log in</button>
+      </form>
+
+      <div class="divider"><span>new here?</span></div>
+      <p class="auth-switch">Don't have an account? <a href="/signup">Sign up free</a></p>
+    </div>
+
+  </div>
+</body>
+</html>

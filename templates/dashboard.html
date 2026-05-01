@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — GD Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-logo">GD Simulator</div>
+      <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-item active">Dashboard</a>
+        <a href="/practice" class="nav-item">Practice</a>
+        <a href="/history" class="nav-item">History</a>
+        <a href="/profile" class="nav-item">Profile</a>
+      </nav>
+      <a href="/logout" class="nav-logout">Log out</a>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <div class="page-header">
+        <h1>Welcome back, {{ name }} 👋</h1>
+        <p>Ready to practice today?</p>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Tests taken</div>
+          <div class="stat-value">{{ total_sessions }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg score</div>
+          <div class="stat-value">{{ avg_score }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Best score</div>
+          <div class="stat-value">{{ best_score }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">This week</div>
+          <div class="stat-value">{{ this_week }}</div>
+        </div>
+      </div>
+
+      <!-- SCORE CHART -->
+      <div class="section-title" style="margin-top:2rem;">Score over time</div>
+      <div class="practice-card" style="margin-bottom:2rem;">
+        {% if chart_scores %}
+          <canvas id="scoreChart" height="100"></canvas>
+        {% else %}
+          <div class="empty-state">No sessions yet. <a href="/practice">Do your first practice!</a></div>
+        {% endif %}
+      </div>
+
+      <!-- RECENT SESSIONS -->
+      <div class="section-title">Recent sessions</div>
+      <div class="sessions-list">
+        {% if recent_sessions %}
+          {% for s in recent_sessions %}
+          <div class="session-row">
+            <div class="session-info">
+              <div class="session-topic">{{ s['topic'] }}</div>
+              <div class="session-meta">{{ s['created_at'] }} · {{ s['difficulty'] }}</div>
+            </div>
+            <div class="score-badge {% if s['score_overall'] >= 8 %}badge-green{% elif s['score_overall'] >= 6 %}badge-amber{% else %}badge-red{% endif %}">
+              {{ s['score_overall'] }}
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty-state">No sessions yet. <a href="/practice">Start your first practice!</a></div>
+        {% endif %}
+      </div>
+
+      <!-- START BUTTON -->
+      <a href="/practice" class="btn-start">Start practicing</a>
+
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script>
+    const labels = {{ chart_labels | tojson }};
+    const scores = {{ chart_scores | tojson }};
+
+    if (scores.length > 0) {
+      const ctx = document.getElementById('scoreChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Overall score',
+            data: scores,
+            borderColor: '#7F77DD',
+            backgroundColor: 'rgba(83,74,183,0.08)',
+            borderWidth: 2,
+            pointBackgroundColor: '#534AB7',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(15,14,20,0.9)',
+              titleColor: '#AFA9EC',
+              bodyColor: '#f0efe8',
+              borderColor: 'rgba(83,74,183,0.3)',
+              borderWidth: 1,
+              callbacks: {
+                label: ctx => 'Score: ' + ctx.parsed.y + '/10'
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.04)' },
+              ticks: {
+                color: '#4a4a47',
+                font: { family: 'Inter', size: 11 }
+              }
+            },
+            y: {
+              min: 0,
+              max: 10,
+              grid: { color: 'rgba(255,255,255,0.04)' },
+              ticks: {
+                color: '#4a4a47',
+                font: { family: 'Inter', size: 11 },
+                stepSize: 2
+              }
+            }
+          }
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>

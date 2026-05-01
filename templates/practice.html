@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Practice — GD Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-logo">GD Simulator</div>
+      <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-item">Dashboard</a>
+        <a href="/practice" class="nav-item active">Practice</a>
+        <a href="/history" class="nav-item">History</a>
+        <a href="/profile" class="nav-item">Profile</a>
+      </nav>
+      <a href="/logout" class="nav-logout">Log out</a>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <div class="page-header">
+        <h1>Practice session</h1>
+        <p>Choose a topic and share your thoughts</p>
+      </div>
+
+      <div class="practice-card">
+
+        <!-- TOPIC + DIFFICULTY -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Topic</label>
+            <select id="topic" name="topic">
+              <option>AI in Education</option>
+              <option>Impact of Social Media</option>
+              <option>Work From Home vs Office</option>
+              <option>Is AI a threat to jobs?</option>
+              <option>Should college education be free?</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Difficulty</label>
+            <select id="difficulty" name="difficulty">
+              <option>Easy</option>
+              <option selected>Medium</option>
+              <option>Hard</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- TIMER -->
+        <div class="timer-box">
+          <div class="timer-label">Time remaining</div>
+          <div class="timer-display" id="timer">2:00</div>
+          <button class="btn-timer" id="timerBtn" onclick="startTimer()">Start timer</button>
+        </div>
+
+        <!-- RESPONSE -->
+        <div class="form-group" style="margin-top: 1.5rem;">
+          <label>Your response</label>
+          <textarea id="userResponse" rows="5" placeholder="Type your response here..."></textarea>
+        </div>
+
+        <!-- SUBMIT -->
+        <button class="btn-primary" id="submitBtn" onclick="submitResponse()">Submit response</button>
+
+      </div>
+
+      <!-- AI DISCUSSION OUTPUT -->
+      <div class="discussion-output" id="discussionOutput" style="display:none;">
+
+        <div class="section-title">AI Discussion</div>
+
+        <div class="speaker-card speaker-confident">
+          <div class="speaker-name">Confident Speaker</div>
+          <div class="speaker-text" id="confidentText"></div>
+        </div>
+
+        <div class="speaker-card speaker-aggressive">
+          <div class="speaker-name">Aggressive Debater</div>
+          <div class="speaker-text" id="aggressiveText"></div>
+        </div>
+
+        <div class="speaker-card speaker-logical">
+          <div class="speaker-name">Logical Thinker</div>
+          <div class="speaker-text" id="logicalText"></div>
+        </div>
+
+        <!-- SCORES -->
+        <div class="score-section">
+          <div class="section-title">Your scores</div>
+          <div class="scores-grid">
+            <div class="score-item">
+              <div class="score-label">Clarity</div>
+              <div class="score-num" id="clarityScore">-</div>
+            </div>
+            <div class="score-item">
+              <div class="score-label">Logic</div>
+              <div class="score-num" id="logicScore">-</div>
+            </div>
+            <div class="score-item">
+              <div class="score-label">Confidence</div>
+              <div class="score-num" id="confidenceScore">-</div>
+            </div>
+            <div class="score-item">
+              <div class="score-label">Relevance</div>
+              <div class="score-num" id="relevanceScore">-</div>
+            </div>
+          </div>
+          <div class="overall-score">Overall: <span id="overallScore">-</span> / 10</div>
+        </div>
+
+        <!-- FEEDBACK -->
+        <div class="feedback-box">
+          <div class="section-title">Feedback</div>
+          <div id="feedbackText"></div>
+        </div>
+
+        <a href="/practice" class="btn-start" style="margin-top:1.5rem;">Practice again</a>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // TIMER
+    let timeLeft = 120;
+    let timerInterval = null;
+    let timerStarted = false;
+
+    function startTimer() {
+      if (timerStarted) return;
+      timerStarted = true;
+      document.getElementById('timerBtn').style.display = 'none';
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        let mins = Math.floor(timeLeft / 60);
+        let secs = timeLeft % 60;
+        document.getElementById('timer').textContent =
+          mins + ':' + (secs < 10 ? '0' : '') + secs;
+
+        if (timeLeft <= 30) {
+          document.getElementById('timer').style.color = '#f09595';
+        }
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          document.getElementById('timer').textContent = "Time's up!";
+        }
+      }, 1000);
+    }
+
+    // SUBMIT
+    async function submitResponse() {
+      const userResponse = document.getElementById('userResponse').value.trim();
+      const topic = document.getElementById('topic').value;
+      const difficulty = document.getElementById('difficulty').value;
+
+      if (!userResponse) {
+        alert('Please type your response first!');
+        return;
+      }
+
+      const btn = document.getElementById('submitBtn');
+      btn.textContent = 'Analysing...';
+      btn.disabled = true;
+      btn.style.display = 'none';
+      document.getElementById('userResponse').disabled = true;
+      document.getElementById('topic').disabled = true;
+      document.getElementById('difficulty').disabled = true;
+
+      try {
+        const res = await fetch('/submit_response', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_response: userResponse, topic, difficulty })
+        });
+
+        const data = await res.json();
+
+        // Show output section
+        document.getElementById('discussionOutput').style.display = 'block';
+
+        // Fill in AI speakers
+        document.getElementById('confidentText').textContent = data.confident || '';
+        document.getElementById('aggressiveText').textContent = data.aggressive || '';
+        document.getElementById('logicalText').textContent = data.logical || '';
+
+        // Fill in scores
+        document.getElementById('clarityScore').textContent = data.scores.clarity;
+        document.getElementById('logicScore').textContent = data.scores.logic;
+        document.getElementById('confidenceScore').textContent = data.scores.confidence;
+        document.getElementById('relevanceScore').textContent = data.scores.relevance;
+        document.getElementById('overallScore').textContent = data.scores.overall;
+
+        // Fill in feedback
+        document.getElementById('feedbackText').innerHTML =
+          '<p><strong>Strengths:</strong> ' + data.strengths + '</p>' +
+          '<p><strong>Weaknesses:</strong> ' + data.weaknesses + '</p>' +
+          '<p><strong>Suggestions:</strong> ' + data.suggestions + '</p>';
+
+        // Scroll to output
+        document.getElementById('discussionOutput').scrollIntoView({ behavior: 'smooth' });
+
+      } catch (err) {
+        alert('Something went wrong. Please try again.');
+      }
+
+      
+    }
+  </script>
+
+</body>
+</html>

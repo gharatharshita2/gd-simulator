@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>History — GD Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="app-layout">
+
+    <div class="sidebar">
+      <div class="sidebar-logo">GD Simulator</div>
+      <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-item">Dashboard</a>
+        <a href="/practice" class="nav-item">Practice</a>
+        <a href="/history" class="nav-item active">History</a>
+        <a href="/profile" class="nav-item">Profile</a>
+      </nav>
+      <a href="/logout" class="nav-logout">Log out</a>
+    </div>
+
+    <div class="main-content">
+      <div class="page-header">
+        <h1>Session history</h1>
+        <p>All your past practice sessions</p>
+      </div>
+
+      <div class="sessions-list">
+        {% if sessions %}
+          {% for s in sessions %}
+          <div class="session-row">
+            <div class="session-info">
+              <div class="session-topic">{{ s['topic'] }}</div>
+              <div class="session-meta">{{ s['created_at'] }} · {{ s['difficulty'] }}</div>
+              <div class="session-feedback">{{ s['feedback'] }}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div class="score-badge {% if s['score_overall'] >= 8 %}badge-green{% elif s['score_overall'] >= 6 %}badge-amber{% else %}badge-red{% endif %}">
+                {{ s['score_overall'] }}
+              </div>
+              <a href="/download_pdf/{{ s['id'] }}" class="btn-download">PDF</a>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty-state">
+            No sessions yet. <a href="/practice">Start your first practice!</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
