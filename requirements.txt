@@ -1,0 +1,6 @@
+flask
+groq
+python-dotenv
+bcrypt
+fpdf2
+gunicorn
